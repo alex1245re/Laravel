@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Contacto;
 use App\Http\Requests\StoreContactoRequest;
 use App\Http\Requests\UpdateContactoRequest;
+use App\Actions\CreateContactoAction;
+use App\Actions\UpdateContactoAction;
+use App\Actions\DeleteContactoAction;
 
 class ContactoController extends Controller
 {
@@ -13,7 +16,7 @@ class ContactoController extends Controller
      */
     public function index()
     {
-        $contactos = Contacto::orderBy('apellidos')->orderBy('nombre')->get();
+        $contactos = Contacto::orderBy('apellidos')->orderBy('nombre')->paginate(10);
         return view('contactos.index', compact('contactos'));
     }
 
@@ -28,10 +31,13 @@ class ContactoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreContactoRequest $request)
+    public function store(StoreContactoRequest $request, CreateContactoAction $action)
     {
-        Contacto::create($request->validated());
+        // Validamos (vía $request)
+        // Ejecutamos la acción
+        $action->execute($request->validated());
         
+        // Respondemos
         return redirect()->route('contactos.index')
             ->with('success', 'Contacto creado exitosamente.');
     }
@@ -55,9 +61,10 @@ class ContactoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateContactoRequest $request, Contacto $contacto)
+    public function update(UpdateContactoRequest $request, Contacto $contacto, UpdateContactoAction $action)
     {
-        $contacto->update($request->validated());
+        // Ejecutamos la acción
+        $action->execute($contacto, $request->validated());
         
         return redirect()->route('contactos.index')
             ->with('success', 'Contacto actualizado exitosamente.');
@@ -66,9 +73,9 @@ class ContactoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Contacto $contacto)
+    public function destroy(Contacto $contacto, DeleteContactoAction $action)
     {
-        $contacto->delete();
+        $action->execute($contacto);
         
         return redirect()->route('contactos.index')
             ->with('success', 'Contacto eliminado exitosamente.');

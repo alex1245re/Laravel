@@ -67,5 +67,11 @@
                 </a>
             </div>
         @endforelse
+
+        @if($contactos->hasPages())
+            <div style="margin-top: 2rem; display: flex; justify-content: center;">
+                {{ $contactos->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.app>
